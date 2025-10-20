@@ -1,0 +1,13 @@
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager instance; // 정적으로 사용하겠다는 키워드, 바로 메모리에 얹어버림
+    public Player player;
+
+    private void Awake()
+    {
+        instance = this; // 생명 주기에서 인스턴스 변수를 자기자신 this로 초기화
+    }
+
+}

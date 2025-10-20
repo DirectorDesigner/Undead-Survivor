@@ -1,0 +1,63 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class Player : MonoBehaviour
+{
+
+    public Vector2 inputVec;    // 변수의 타입, 변수의 이름 = 변수에 의미 부여 시 누구나 이해할 수 있음
+    public float speed;         // 속도 받는/관리하는 float 변수 선언
+    Rigidbody2D rigid;          // 리지드 바디를 받는 변수 선언
+    SpriteRenderer spriter;     // 스프라이트 받는 변수
+    Animator anim;              // 애니메이션 받는 변수
+
+
+    private void Awake()
+    {
+        rigid = GetComponent<Rigidbody2D>();        // 초기화용
+        spriter = GetComponent<SpriteRenderer>();   // 초기화용
+        anim = GetComponent<Animator>();            // 초기화용
+    }
+
+    void Start()
+    {
+        
+    }
+
+    // void Update() , Input System을 사용해서 이제는 사용 안함, 주석 처리함
+    //{
+        //inputVec.x = Input.GetAxisRaw("Horizontal"); // GetAxis는 부드럽게 움직임 (스케이팅 현상)
+        //inputVec.y = Input.GetAxisRaw("Vertical");  // Raw는 딱딱 떨어짐
+    //}
+
+
+    void FixedUpdate()                                // 물리 연산 프레임마다 호출되는 생명 주기 함수
+    {
+        Vector2 nextVec = inputVec * speed * Time.fixedDeltaTime;
+                                                      // 피타고라스 정리 이론, 대각선은 1보다 더 큰 루트2니까, 대각선일 때는 속도가 더 빨라짐, 대각선도 같은 속도를 위해 normalized를 사용
+                                                      // fixedDeltaTime은 물리 프레임 하나가 소비한 시간, 그냥 DeltaTime은 Update에서 사용, fixedDeltaTime은 fixed에서
+                                                      // inputVec.normalized였지만 normalized가 Player Input에서 설정되어있어서 삭제함
+
+        rigid.MovePosition(rigid.position + nextVec); // 위치 이동, 현재 위치도 더 해줘야 함
+    }
+
+    void OnMove(InputValue value) // Input System 패키지 사용, PlayerInput 컴포넌트 사용
+                                  //InputValue 매개변수 사용 
+    {
+        inputVec = value.Get<Vector2>(); 
+    }
+
+    private void LateUpdate()
+    {
+        
+        anim.SetFloat("Speed", inputVec.magnitude); // 움직임에 따라서 Speed값 조절 되면서 애니 실행 
+                                                    // magnitude = 벡터의 순수한 크기 값
+        
+        if (inputVec.x != 0)                    // flip 하기 위한 함수
+                                                // 0이 아닐 때
+        {
+            spriter.flipX = inputVec.x < 0;     // 0보다 작으면(좌로 가면) true, 0보다 크면(우로 가면) false 처리됨
+        }
+    }
+
+
+}

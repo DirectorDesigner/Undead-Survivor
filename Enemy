@@ -1,0 +1,64 @@
+using UnityEngine;
+
+public class Reposition : MonoBehaviour
+{
+
+    Collider2D coll;
+
+    private void Awake()
+    {
+        coll = GetComponent<Collider2D>(); // 초기화 용
+    }
+
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (!collision.CompareTag("Area")) // ! = 아니면이란 뜻
+            return;                        // return은 더이상 실행하지 않고 함수 탈출
+                                           // Area 태그가 붙은 애랑 부딪혀서 벗어났을 때만 아래 코드가 동작해라
+
+        // 거리를 구하기 위해 플레이어 위치와 타일맵 위치 미리 저장
+        Vector3 playerPos = GameManager.instance.player.transform.position; // 플레이어의 포지션
+        Vector3 MyPos = transform.position;                                 // 타일맵의 트랜스폼 포지션
+        
+        float diffX = Mathf.Abs(playerPos.x - MyPos.x); // 플레이어 위치 - 타일맵 위치 계산으로 거리 구하기
+        float diffY = Mathf.Abs(playerPos.y - MyPos.y); // 음수도 양수로 만들어주는 절대값 함수
+                                                        // 결국 거리는 음수여도 -5(음수)여도 5만큼 움직인거니까
+                                                        // 방향 상관없이 얼마나 떨어져있는지 확인하는 것임
+
+        Vector3 playerDir = GameManager.instance.player.inputVec; // 플레이어가 어느 방향으로 이동 중인지 판단
+        float dirX = playerDir.x < 0 ? -1 : 1;                    // ? = 3항 연산자 = (조건) ? (참일 때 값) : (거짓일 때 값)
+        float dirY = playerDir.y < 0 ? -1 : 1;
+                                                                  // 대각선일 때는 노멀라이즈드에 의해 1보다 작은 값이 되어버림(0.7이 됨)
+                                                                  // 그래서 0보다 작으면 -1로, 아니면 1로 준다라는 뜻
+                                                                  // 노멀라이즈드가 없으면 적을 필요 없음
+
+        
+        switch (transform.tag) // 맵 타일이 계속 이동 시키는 내용
+                               // swith는 값에 따라 다른 동작 실행/로직을 나눠주는 키워드
+        {
+            case "Ground": // 케바케 할 때 그 케이스처럼
+                if (diffX > diffY)
+                {
+                    transform.Translate(Vector3.right * dirX * 40); // Translate = 지정된 값 만큼 현재 위치에서 이동
+                                                                    // right만 있는 이유는 dirX를 곱해주니까 left를 안써도 같은 효과를 일으킴
+                                                                    // 오른쪽 가면 Vector3.right * (+1) * 40 → 오른쪽으로 40
+                                                                    // 왼쪽 가면 Vector3.right * (-1) * 40 → 왼쪽으로 40
+                }
+                else if (diffX < diffY)
+                {
+                    transform.Translate(Vector3.up * dirY * 40);
+                }
+                    break;
+            
+            case "Enemy": // 적을 계속 이동 시키는 내용
+                if (coll.enabled)
+                {
+                    transform.Translate(playerDir * 20 + new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), 0f)); // 플레이어 이동 방향의 맞은 편에서 나올 수 있도록
+                }
+                break;
+        }
+
+    }
+
+}

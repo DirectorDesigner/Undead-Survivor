@@ -1,0 +1,37 @@
+using UnityEngine;
+
+public class Spawner : MonoBehaviour
+{
+
+    public Transform[] spawnPoint;
+    
+    float timer;
+
+    private void Awake()
+    {
+        spawnPoint = GetComponentsInChildren<Transform>(); // 자식 오브젝트 및 나 자신 포함 모두 가져오기
+    }
+
+
+    void Update()
+    {
+        
+        timer += Time.deltaTime; // 한 프레임마다 시간 흐름 = 시간 흐름, 누적
+
+        if (timer > 0.2f) // 타이머가 일정 시간 값에 도달하면 소환하도록
+        {
+            timer = 0;    // 타이머 초기화
+            Spawn();      // 소환 함수 호출
+        }
+    }
+
+    void Spawn()
+    {
+        GameObject enemy = GameManager.instance.pool.Get(Random.Range(0,2)); // 0 또는 1 몬스터 소환
+        enemy.transform.position = spawnPoint[Random.Range(1, spawnPoint.Length)].position; // 스폰 포인트 중 하나에 소환
+                                                                                            // spawnPoint, 나 자신은 빼기 위해 0부터가 아닌 1부터 시작
+    }
+
+
+
+}

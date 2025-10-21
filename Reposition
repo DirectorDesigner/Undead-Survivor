@@ -36,7 +36,7 @@ public class Reposition : MonoBehaviour
 
         
         switch (transform.tag) // 맵 타일이 계속 이동 시키는 내용
-                               // swith는 값에 따라 다른 동작 실행/로직을 나눠주는 키워드
+                               // switch는 값에 따라 다른 동작 실행/로직을 나눠주는 키워드
         {
             case "Ground": // 케바케 할 때 그 케이스처럼
                 if (diffX > diffY)

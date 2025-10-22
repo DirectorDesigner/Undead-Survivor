@@ -4,7 +4,9 @@ public class Spawner : MonoBehaviour
 {
 
     public Transform[] spawnPoint;
-    
+    public SpawnData[] spawnData;
+
+    int level;
     float timer;
 
     private void Awake()
@@ -17,21 +19,31 @@ public class Spawner : MonoBehaviour
     {
         
         timer += Time.deltaTime; // 한 프레임마다 시간 흐름 = 시간 흐름, 누적
+        level = Mathf.Min(Mathf.FloorToInt(GameManager.instance.gameTime / 10f), spawnData.Length -1); // 게임 시간에 따라 레벨 결정, 최대 레벨은 spawnData 배열 길이 -1
 
-        if (timer > 0.2f)        // 타이머가 일정 시간 값에 도달하면 소환하도록
+        if (timer > spawnData[level].spawnTime) // 타이머가 일정 시간 값에 도달하면 소환하도록
         {
             timer = 0;           // 타이머 초기화
             Spawn();             // 소환 함수 호출
         }
     }
-
+     
     void Spawn()
     {
-        GameObject enemy = GameManager.instance.pool.Get(Random.Range(0,2));                // 0 또는 1 몬스터 소환
+        GameObject enemy = GameManager.instance.pool.Get(0);                                // 0만해서 Enemy 프리팹 소환
         enemy.transform.position = spawnPoint[Random.Range(1, spawnPoint.Length)].position; // 스폰 포인트 중 하나에 소환
                                                                                             // spawnPoint, 나 자신은 빼기 위해 0부터가 아닌 1부터 시작
+        enemy.GetComponent<Enemy>().Init(spawnData[level]);                                 // 소환된 적 초기화                                                                                    
     }
 
+}
 
+[System.Serializable] // Serializable 직렬화 = 개체를 저장하거나 전송할 수 있는 형식으로 변환하는 것
+public class SpawnData
+{
+    public float spawnTime;
+    public int spriteType;
+    public int health;
+    public float speed;
 
 }

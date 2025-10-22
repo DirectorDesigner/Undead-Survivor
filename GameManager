@@ -3,12 +3,26 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance; // 정적으로 사용하겠다는 키워드, 바로 메모리에 얹어버림
+
+    public float gameTime;
+    public float maxGameTime = 2 * 10f; 
+
     public Player player;
     public PoolManager pool;
 
     private void Awake()
     {
         instance = this; // 생명 주기에서 인스턴스 변수를 자기자신 this로 초기화
+    }
+
+    void Update()
+    {
+        gameTime += Time.deltaTime; // 한 프레임마다 시간 흐름 = 시간 흐름, 누적
+
+        if (gameTime > maxGameTime)
+        {
+            gameTime = maxGameTime; // 타이머 초기화
+        }
     }
 
 }

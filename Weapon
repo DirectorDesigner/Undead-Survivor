@@ -1,0 +1,128 @@
+using UnityEngine;
+
+public class Weapon : MonoBehaviour
+{
+
+    public int id;
+    public int prefabId;
+    public float damage;
+    public int count;
+    public float speed;
+    
+    float timer;
+    Player player;
+
+    private void Awake()
+    {
+        player = GetComponentInParent<Player>(); // 부모 오브젝트에 있는 컴포넌트 가져오기
+    }
+
+
+    void Start()
+    {
+        Init();
+    }
+
+
+    void Update()
+    {
+        switch (id)
+        {
+            case 0:
+                transform.Rotate(Vector3.back * speed * Time.deltaTime); // 회전
+                break;
+            default:
+                timer += Time.deltaTime;
+                if (timer > speed)
+                {
+                    timer = 0;
+                    Fire();
+                }
+                break;
+        }
+
+        // 테스트 코드
+        if (Input.GetButtonDown("Jump"))
+        {
+            LevelUp(20, 1);
+        }
+
+
+    }
+
+    public void LevelUp(float damage, int count)
+    {
+        this.damage = damage;
+        this.count += count;
+
+        if (id == 0)
+            Batch();
+    }
+
+
+
+    public void Init()
+    { 
+       switch (id)
+        {
+            case 0:
+                speed = 150;
+                Batch();
+                    break;
+                default:
+                    speed = 0.3f;
+                    break;
+        }
+
+
+    }
+
+    void Batch()
+    {
+        for (int index = 0; index < count; index++)
+        {
+            Transform bullet;
+
+            if (index < transform.childCount)
+            {
+                bullet = transform.GetChild(index); // 자식에 이미 만들어진 것이 있으면 재활용
+            }
+            else                                    // 그것이 아니라면
+            {
+                bullet = GameManager.instance.pool.Get(prefabId).transform; // 오브젝트 풀에서 총알을 가져온다
+                bullet.parent = transform;                                  // 무기를 부모로 설정한다
+                                                                            // 기본 오브젝트를 먼저 활용하고 모자란 것은 풀링에서 가져온다
+            }
+            
+            bullet.localPosition = Vector3.zero;        // 총알 벡터 값 초기화
+            bullet.localRotation = Quaternion.identity; // 총알 회전 값 초기화
+
+            Vector3 rotVec = Vector3.forward * 360 * index / count;       // 360도 원을 count 개수로 나누어 각도를 구한다
+            bullet.Rotate(rotVec);
+            bullet.Translate(bullet.up * 1.5f, Space.World);              // 총알을 위로 1.5만큼 이동시킨다 (월드 좌표계 기준)
+
+            bullet.GetComponent<Bullet>().Init(damage, -1, Vector3.zero); // -1은 무한 관통 (주석 적어라 남들도 이해하게)
+
+        }
+    }
+
+
+    void Fire()
+    {
+        if (!player.scanner.nearestTarget)
+            return;
+        
+        // 총알이 나아가고자 하는 방향 결정
+        Vector3 targetPos = player.scanner.nearestTarget.position;
+        Vector3 dir = targetPos - transform.position;               // 방향 벡터 계산 및 정규화
+        dir = dir.normalized;                                       // 단위 벡터로 변환, 정규화
+
+        // 그것에 따라서 위치와 회전 결정 후 Bullet 스크립트에 전달
+        Transform bullet = GameManager.instance.pool.Get(prefabId).transform;
+        bullet.position = transform.position;
+        bullet.rotation = Quaternion.FromToRotation(Vector3.up, dir); // 지정된 축을 중심으로 목표를 향해 회전하는 함수
+        bullet.GetComponent<Bullet>().Init(damage,count, dir);        // -1은 무한 관통 (주석 적어라 남들도 이해하게)
+
+    }
+
+}

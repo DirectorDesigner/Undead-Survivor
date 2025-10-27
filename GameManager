@@ -4,9 +4,17 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance; // 정적으로 사용하겠다는 키워드, 바로 메모리에 얹어버림
 
+    [Header("# Game Control")]
     public float gameTime;
-    public float maxGameTime = 2 * 10f; 
+    public float maxGameTime = 2 * 10f;
 
+    [Header("# Player Info")]
+    public int level;
+    public int kill;
+    public int exp;
+    public int[] nextExp = { 3, 5, 10, 100, 150, 210, 280, 360, 450, 600}; // 다음 레벨업에 필요한 경험치
+
+    [Header("# GameObject")]
     public Player player;
     public PoolManager pool;
 
@@ -19,9 +27,19 @@ public class GameManager : MonoBehaviour
     {
         gameTime += Time.deltaTime; // 한 프레임마다 시간 흐름 = 시간 흐름, 누적
 
-        if (gameTime > maxGameTime)
+        if (gameTime > maxGameTime) // 최대 게임 시간 도달했을 때
         {
             gameTime = maxGameTime; // 타이머 초기화
+        }
+    }
+    public void GetExp()
+    {
+        exp ++;                     // 경험치 1 증가
+
+        if (exp == nextExp[level])  // 다음 레벨업에 필요한 경험치 도달했을 때
+        {
+            level++;                // 레벨 업
+            exp = 0;                // 경험치 초기화
         }
     }
 

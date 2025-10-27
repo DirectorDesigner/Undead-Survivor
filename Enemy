@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -11,22 +12,25 @@ public class Enemy : MonoBehaviour
     bool isLive; // 몬스터가 살아있는지, 죽어있는지 체크, 현재는 임시로 true로 박아놓음
 
     Rigidbody2D rigid;
+    Collider2D coll;
     Animator anim;
     SpriteRenderer spriter; // 좌우 반전용
+    WaitForFixedUpdate wait;
 
 
     void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
+        coll = GetComponent<Collider2D>();
         spriter = GetComponent<SpriteRenderer>(); // 초기화용
         anim = GetComponent<Animator>();
+        wait = new WaitForFixedUpdate();
     }
 
 
     private void FixedUpdate()
     {
-
-        if (!isLive)
+        if (!isLive || anim.GetCurrentAnimatorStateInfo(0).IsName("Hit")) // GetCurrentAnimatorStateInfo = 현재 애니메이터 상태 정보 가져오기
             return; // 살아있지 않으면 밑에 함수를 실행 시키지 마라
 
         Vector2 dirVec = target.position - rigid.position;                 // 위치 차이 = 타겟 위치 - 나의 위치, 변수를 프레임마다 개산해야 해서 FixedUpdate안에 넣음
@@ -48,16 +52,60 @@ public class Enemy : MonoBehaviour
                                                                           // Enemy 프리팹에 Target에 플레이어의 리지드 바디가 자동으로 들어가게
                                                                           // 이렇게 하면 적이 플레이어를 자동으로 쫓아감
         isLive = true;
+        coll.enabled = true;         // 콜라이더 활성화
+        rigid.simulated = true;      // 리지드바디 활성화
+        spriter.sortingOrder = 2;    // 스프라이트 정렬 순서 변경
+        anim.SetBool("Dead", false); // 죽음 애니메이션 false로 초기화
         health = maxHealth;
     }
 
     public void Init(SpawnData data)
     {
         anim.runtimeAnimatorController = animCon[data.spriteType]; // 몬스터 애니메이터 컨트롤러 교체
-        speed = data.speed;
-        maxHealth = data.health;
-        health = data.health;
+        speed = data.speed;                                        // SpawnData의 speed 값으로 초기화
+        maxHealth = data.health;                                   // SpawnData의 health 값으로 초기화
+        health = data.health;   
     }
 
+
+    private void OnTriggerEnter2D(Collider2D collision)    // 트리거 충돌 발생했을 때 자동으로 호출됨
+    {
+        if (!collision.CompareTag("Bullet") || !isLive)    // 총알 태그와 부딪힌게 아니거나, 이미 죽은거라면 (or로 !isLive 추가)
+            return;                                        // 밑에 코드 실행하지 마라
+
+        health -= collision.GetComponent<Bullet>().damage; // 체력에서 총알의 데미지 만큼 깎음
+        StartCoroutine(KnockBack());                       // 넉백 코루틴 실행
+
+        if (health > 0)             // 체력이 0이상일 때 히트 처리
+        {
+            anim.SetTrigger("Hit"); // 히트 애니메이션 재생
+        }
+        else                        // 0이하일 때 죽음 처리
+        {
+            isLive = false;
+            coll.enabled = false;          // 콜라이더 비활성화
+            rigid.simulated = false;       // 리지드바디 비활성화
+            spriter.sortingOrder = 1;      // 스프라이트 정렬 순서 변경
+            anim.SetBool("Dead", true);
+            GameManager.instance.kill++;   // 킬 수 증가
+            GameManager.instance.GetExp(); // 경험치 획득
+        }
+
+    }
+
+    IEnumerator KnockBack() // 코루틴 = 인터페이스 생명 주기와 비동기처럼 실행되는 함수
+                            // IEnumerator = 코루틴만의 반환형
+    {
+        yield return wait;                                                  // yield return = 코루틴의 반환 키워드 / 다음 하나의 물리 프레임을 딜레이
+        Vector3 playerPos = GameManager.instance.player.transform.position; // 플레이어 위치
+        Vector3 dirVec = transform.position - playerPos;                    // 방향 벡터 = 적 위치 - 플레이어 위치
+        rigid.AddForce(dirVec.normalized * 3, ForceMode2D.Impulse);         // 리지드바디에 힘을 가함 = 방향 벡터의 단위 벡터 * 3, 순간적인 힘
+    }
+
+
+    void Dead()
+    {
+        gameObject.SetActive(false);
+    }
 
 }

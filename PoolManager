@@ -40,7 +40,7 @@ public class PoolManager : MonoBehaviour
         // 프리팹으로부터 새로 생성해서 select 변수에 할당
         if (!select)                                             // select 변수가 비어있으면
         {
-            select = Instantiate(prefabs[index], transform);     // 프리팹으로부터 새로 생성, Instantiate = 원본 오브젝트를  복제해서 장면에 생성하는 함수
+            select = Instantiate(prefabs[index], transform);     // 프리팹으로부터 새로 생성, Instantiate = 원본 오브젝트를 복제해서 장면에 생성하는 함수
             pools[index].Add(select);                            // 생성한 게임 오브젝트를 해당 풀에 추가
         }
 

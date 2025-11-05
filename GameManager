@@ -5,6 +5,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance; // 정적으로 사용하겠다는 키워드, 바로 메모리에 얹어버림
 
     [Header("# Game Control")]
+    public bool isLive;
     public float gameTime;
     public float maxGameTime = 2 * 10f;
 
@@ -13,18 +14,33 @@ public class GameManager : MonoBehaviour
     public int kill;
     public int exp;
     public int[] nextExp = { 3, 5, 10, 100, 150, 210, 280, 360, 450, 600}; // 다음 레벨업에 필요한 경험치
+    public int health;
+    public int maxHealth = 100;
 
     [Header("# GameObject")]
     public Player player;
     public PoolManager pool;
+    public LevelUp uiLevelUp;
 
     private void Awake()
     {
         instance = this; // 생명 주기에서 인스턴스 변수를 자기자신 this로 초기화
     }
 
+    void Start()
+    {
+        health = maxHealth; // 플레이어 체력 초기화
+
+        // 임시 스크립트
+        uiLevelUp.Select(0);
+
+    }
+
     void Update()
     {
+        if (!isLive)
+            return;
+
         gameTime += Time.deltaTime; // 한 프레임마다 시간 흐름 = 시간 흐름, 누적
 
         if (gameTime > maxGameTime) // 최대 게임 시간 도달했을 때
@@ -36,11 +52,26 @@ public class GameManager : MonoBehaviour
     {
         exp ++;                     // 경험치 1 증가
 
-        if (exp == nextExp[level])  // 다음 레벨업에 필요한 경험치 도달했을 때
+        if (exp == nextExp[Mathf.Min(level, nextExp.Length-1)])  // 다음 레벨업에 필요한 경험치 도달했을 때
+                                                                 
         {
             level++;                // 레벨 업
             exp = 0;                // 경험치 초기화
+
+            uiLevelUp.Show();       // 레벨업 UI 보여주기
         }
+    }
+
+    public void Stop()
+    {
+        isLive = false;
+        Time.timeScale = 0f; // 시간 멈춤
+    }
+
+    public void Resume()
+    {
+        isLive = true;
+        Time.timeScale = 1f; // 시간 재개
     }
 
 }

@@ -1,0 +1,108 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Item : MonoBehaviour
+{
+    public ItemData data;
+    public int level;
+    public Weapon weapon;
+    public Gear gear;
+
+    Image icon;
+    Text textLevel;
+    Text textName;
+    Text textDesc;
+
+    private void Awake() // 초기화용
+    {
+        icon = GetComponentsInChildren<Image>()[1]; // 두번째 값으로 가져오기 (첫번째는 자기 자신 - 배경)
+        icon.sprite = data.itemIcon;
+
+        Text[] texts = GetComponentsInChildren<Text>();
+        textLevel = texts[0];   // 하이어라키에서 순서대로 가져오는거라 Level이 0번째
+        textName = texts[1];    // 하이어라키에서 순서대로 가져오는거라 Level이 1번째
+        textDesc = texts[2];    // 하이어라키에서 순서대로 가져오는거라 Level이 2번째
+        textName.text = data.itemName;
+    }
+
+    private void OnEnable()
+    {
+        textLevel.text = "Lv." + (level + 1);
+
+        switch(data.itemType)
+        {
+            case ItemData.ItemType.Melee:
+            case ItemData.ItemType.Range:
+                textDesc.text = string.Format(data.itemDesc, data.damages[level] * 100, data.counts[level]);
+                break;
+            case ItemData.ItemType.Glove:
+            case ItemData.ItemType.Shoe:
+                textDesc.text = string.Format(data.itemDesc, data.damages[level] * 100);
+                break;
+            default:
+                textDesc.text = string.Format(data.itemDesc);
+                break;
+        }
+
+    }
+
+
+    public void OnClick()
+    {
+        switch(data.itemType)
+        {
+            case ItemData.ItemType.Melee:
+            case ItemData.ItemType.Range:
+                if (level == 0)                                          // 0레벨일 때 (첫 획득)
+                {
+                    GameObject newWeapon = new GameObject();             // 새로운 게임 오브젝트 생성
+                    weapon = newWeapon.AddComponent<Weapon>();           // Weapon 컴포넌트 추가
+                    weapon.Init(data);                                   // Weapon 초기화
+                }
+
+                else                                                     // 0보다 클 때 (레벨업)
+                {
+                    float nextDamage = data.baseDamage;                  // 다음 레벨의 데미지 계산을 위한 변수
+                    int nextCount = 0;                                   // 다음 레벨의 카운트 계산을 위한 변수
+
+                    nextDamage += data.baseDamage * data.damages[level]; // 다음 레벨의 데미지 계산
+                    nextCount += data.counts[level];                     // 다음 레벨의 카운트 계산
+
+                    weapon.LevelUp(nextDamage, nextCount);               // Weapon 레벨업
+
+                }
+                level++;                                                 // 레벨 증가
+                break;
+
+            case ItemData.ItemType.Glove:
+            case ItemData.ItemType.Shoe:
+                if (level == 0)                             // 0레벨일 때 (첫 획득)
+                {
+                    GameObject newGear = new GameObject();  // 새로운 게임 오브젝트 생성
+                    gear = newGear.AddComponent<Gear>();    // Gear 컴포넌트 추가
+                    gear.Init(data);                        // Gear 초기화
+                }
+                else                                        // 0보다 클 때 (레벨업)
+                {
+                    float nextRate = data.damages[level];   // 다음 레벨의 비율 계산
+                    gear.LevelUp(nextRate);                 // Gear 레벨업
+                }
+
+                level++;                                    // 레벨 증가
+                break;
+
+            case ItemData.ItemType.Heal:                                      // 회복 아이템
+                GameManager.instance.health = GameManager.instance.maxHealth; // 체력 회복
+                break;
+        }
+
+
+
+        if(level == data.damages.Length)  // 최대 레벨 도달하면?
+        {
+           GetComponent<Button>().interactable = false; // 버튼 비활성화
+        }
+
+    }
+
+}

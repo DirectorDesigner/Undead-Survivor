@@ -1,0 +1,72 @@
+using UnityEngine;
+
+public class Gear : MonoBehaviour
+{
+
+    public ItemData.ItemType type;
+    public float rate; // 발사 속도
+
+    public void Init(ItemData data)
+    {
+        // 기본 세팅
+        name = "Gear " + data.itemID;
+        transform.parent = GameManager.instance.player.transform; // 무기의 부모를 플레이어로 설정
+        transform.localPosition = Vector3.zero;                   // 무기의 위치를 플레이어의 위치로 설정
+
+        // 프로퍼티 셋
+        type = data.itemType;
+        rate = data.damages[0];
+
+        ApplyGear(); // 초기화 시 ApplyGear 호출
+    }
+
+    public void LevelUp(float rate)
+    {
+        this.rate = rate;
+        ApplyGear(); // 레벨업할 때마다 ApplyGear 호출
+    }
+
+    void ApplyGear()
+    {
+        switch(type)
+        {
+            case ItemData.ItemType.Glove:
+                RateUp();
+                break;
+            case ItemData.ItemType.Shoe:
+                SpeedUp();
+                break;
+        }
+    }
+
+
+    void RateUp() // 발사 속도 증가
+    {
+        Weapon[] weapons = transform.parent.GetComponentsInChildren<Weapon>();
+
+        foreach (Weapon weapon in weapons)
+        {
+            switch (weapon.id)
+            {
+                case 0:
+                    weapon.speed = 150 + (150 * rate);
+                    break;
+                default:
+                    weapon.speed = 0.5f * (1f - rate);
+                    break;
+            }
+        }
+
+    }
+
+    void SpeedUp() // 이동 속도 증가
+    {
+        float speed = 3;
+        GameManager.instance.player.speed = speed + (speed * rate);
+    }
+
+
+}
+
+
+

@@ -1,0 +1,77 @@
+using UnityEngine;
+
+public class LevelUp : MonoBehaviour
+{
+    RectTransform rect;
+    Item[] items;
+
+    private void Awake()
+    {
+        rect = GetComponent<RectTransform>();
+        items = GetComponentsInChildren<Item>(true);
+    }
+
+    public void Show()                      // 레벨업 UI 보여주기
+    {
+        Next();
+        rect.localScale = Vector3.one;      // UI 크기 원래대로
+        GameManager.instance.Stop();        // 게임 일시정지
+    }
+
+    public void Hide()                      // 레벨업 UI 숨기기
+    {
+        rect.localScale = Vector3.zero;     // UI 크기 0으로
+        GameManager.instance.Resume();      // 게임 재개
+    }
+
+    public void Select(int index)           // 대신 아이템 선택
+    {
+        items[index].OnClick();             // 아이템 클릭 처리 = 0레벨 삽 얻게 / GameManager start에서 받아옴
+    }
+
+    void Next()
+    {
+        // 1. 모든 아이템 비활성화
+        foreach (Item item in items)
+        {
+            item.gameObject.SetActive(false);
+        }
+
+        // 2. 그 중 랜덤 3개 아이템 활성화
+
+        int[] ran = new int[3];
+        while (true)
+        {
+            ran[0] = Random.Range(0, items.Length);
+            ran[1] = Random.Range(0, items.Length);
+            ran[2] = Random.Range(0, items.Length);
+
+            if (ran[0]!= ran[1] && ran[1]!= ran[2] && ran[0]!= ran[2]) // 중복 검사
+                break;                                                 // 중복 없으면 탈출
+        }
+
+        for (int index = 0; index < ran.Length; index++)               // 3개 아이템 활성화
+        {
+            Item ranItem = items[ran[index]];                          // 3번에 걸쳐서 랜덤 아이템 활성화
+
+            // 3. 만렙 아이템의 경우는 소비 아이템으로 대체
+            if (ranItem.level == ranItem.data.damages.Length)          // 만렙 아이템이라면?
+            {
+                items[4].gameObject.SetActive(true); // 소비 아이템 활성화
+            }
+            else
+            {
+                ranItem.gameObject.SetActive(true); // 랜덤 아이템 활성화
+            }
+
+           
+        }
+
+
+        
+
+
+    }
+
+
+}

@@ -17,7 +17,9 @@ public class Spawner : MonoBehaviour
 
     void Update()
     {
-        
+        if (!GameManager.instance.isLive)
+            return;
+
         timer += Time.deltaTime; // 한 프레임마다 시간 흐름 = 시간 흐름, 누적
         level = Mathf.Min(Mathf.FloorToInt(GameManager.instance.gameTime / 10f), spawnData.Length -1); // 게임 시간에 따라 레벨 결정, 최대 레벨은 spawnData 배열 길이 -1
                                                                                                        // 10초마다 1 레벨 업

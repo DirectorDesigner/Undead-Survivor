@@ -14,18 +14,15 @@ public class Weapon : MonoBehaviour
 
     private void Awake()
     {
-        player = GetComponentInParent<Player>(); // 부모 오브젝트에 있는 컴포넌트 가져오기
-    }
-
-
-    void Start()
-    {
-        Init();
+        player = GameManager.instance.player; // 플레이어 참조
     }
 
 
     void Update()
     {
+        if (!GameManager.instance.isLive)
+            return;
+
         switch (id)
         {
             case 0:
@@ -57,23 +54,51 @@ public class Weapon : MonoBehaviour
 
         if (id == 0)
             Batch();
+
+        player.BroadcastMessage("ApplyGear", SendMessageOptions.DontRequireReceiver); // 플레이어와 그 자식 오브젝트들에게 ApplyGear 메시지 전송
     }
 
 
 
-    public void Init()
+    public void Init(ItemData data) // 매개 변수
     { 
-       switch (id)
+       // 기본 세팅
+       name = "Weapon " + data.itemID;
+       transform.parent = player.transform;    // 무기의 부모를 플레이어로 설정
+       transform.localPosition = Vector3.zero; // 무기의 위치를 플레이어의 위치로 설정
+
+        // 프로퍼티 셋
+        id = data.itemID;            // 무기 속성 변수들을 스크립트블 오브젝트 데이터로 초기화
+        damage = data.baseDamage;
+        count = data.baseCount;
+
+        for (int index=0; index < GameManager.instance.pool.prefabs.Length; index++) // 오브젝트 풀에 등록된 프리팹들을 순회
+        {
+            if (data.projectile == GameManager.instance.pool.prefabs[index])         // 무기 데이터의 프리팹과 일치하는 index를 찾으면
+            {
+                prefabId = index;                                                    // prefabId에 그 인덱스 값을 저장, 프리팹 아이디는 풀링 매니저의 변수에서 찾아서 초기화
+                break;                                                               // 찾았으면 반복문 탈출
+            }
+        }
+
+        switch (id)
         {
             case 0:
                 speed = 150;
                 Batch();
                     break;
                 default:
-                    speed = 0.3f;
+                    speed = 0.4f;
                     break;
         }
 
+        // Hand Set
+        Hand hand = player.hands[(int)data.itemType]; // 무기 타입에 맞는 Hand 스크립트 선택
+        hand.spriter.sprite = data.hand;              // Hand 스프라이트를 무기 데이터의 핸드 스프라이트로 설정
+        hand.gameObject.SetActive(true);              // Hand 오브젝트 활성화
+
+
+        player.BroadcastMessage("ApplyGear", SendMessageOptions.DontRequireReceiver); // 플레이어와 그 자식 오브젝트들에게 ApplyGear 메시지 전송
 
     }
 

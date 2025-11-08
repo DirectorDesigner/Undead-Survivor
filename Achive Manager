@@ -1,0 +1,115 @@
+using System;
+using System.Collections;
+using UnityEngine;
+
+public class AchiveManager : MonoBehaviour
+{
+
+    public GameObject[] lockCharacter;
+    public GameObject[] unlockCharacter;
+    public GameObject uiNotice;
+
+    enum Achive { UnlockPotato, UnlockBean }
+    Achive[] achives;
+
+    WaitForSecondsRealtime wait;
+
+
+    private void Awake()
+    {
+        achives = (Achive[])Enum.GetValues(typeof(Achive));  // Enum.GetValues = 주어진 열거형의 데이터를 모두 가져오는 함수
+                                                             // (Achive[]) = 명시적으로 지정하여 타입 맞추기
+
+        wait = new WaitForSecondsRealtime(5);                // UI 연출용 시간 대기 5초
+
+        if (!PlayerPrefs.HasKey("MyData"))                   //  MyData에 키값 가지고 있니?, 없으면 Init으로 초기화
+        {
+            Init();                                          
+        }
+    }
+
+    void Init()
+    {
+        PlayerPrefs.SetInt("MyData", 1);                     // PlayerPrefs = 간단한 저장 기능을 제공하는 유니티 기능
+                                                             // MyData라는 키값에 1이 저장됨
+
+        foreach (Achive achive in achives)                   // 순차적으로 데이터 저장 (업적이 많이 늘어나면 다 적어야되는데 foreach로 다 돌리기)
+        {
+            PlayerPrefs.SetInt(achive.ToString(), 0);        // 지정한 문자열에 0값을 저장하는 것
+        }
+         
+    }
+
+    private void Start()
+    {
+        UnlockCharacter();
+    }
+
+
+    void UnlockCharacter()
+    {
+        for (int index = 0; index < lockCharacter.Length; index++)
+        {
+            string achiveName = achives[index].ToString();          // 잠금 버튼 배열 순회하면서 인덱스에 해당하는 업적 이름 가져오기
+            bool isUnlock = PlayerPrefs.GetInt(achiveName) == 1;    // 업적 달성됐는지 체크하는 비교 연산자
+            lockCharacter[index].SetActive(!isUnlock);              // 안 깼으면 잠금 표시 ON, bool 값으로 켜지고 꺼짐
+            unlockCharacter[index].SetActive(isUnlock);             // 깼으면 실제 캐릭터 ON, bool 값으로 켜지고 꺼짐
+        }
+
+    }
+
+    private void LateUpdate() // 업적 했는지 확인
+    {
+        foreach (Achive achive in achives)
+        {
+            CheckAchive(achive);
+        }
+    }
+
+    void CheckAchive(Achive achive) // 업적 해금 기능
+    {
+        bool isAchive = false;
+
+        switch (achive)
+        {
+
+            case Achive.UnlockPotato:
+                if (GameManager.instance.isLive)                // 게임이 라이브일 때만 (게임 끝나고 적 다 죽일 때 발생 안하게끔)
+                    isAchive = GameManager.instance.kill >= 10; // UnlockPotato는 10킬 이상인 경우에 활성화 됨
+                    break;
+
+            case Achive.UnlockBean:
+                isAchive = GameManager.instance.gameTime == GameManager.instance.maxGameTime; // UnlockBean은 게임 시간이 최고 시간과 같은 경우 해금 됨
+                break;
+        }
+
+
+
+        if (isAchive && PlayerPrefs.GetInt(achive.ToString()) == 0) // 언락된 상태가 아니라면
+        {
+            PlayerPrefs.SetInt(achive.ToString(), 1);               // 1로 저장한다 (SetInt = 저장)
+
+            for (int index = 0; index < uiNotice.transform.childCount; index++) 
+            {
+                bool isActive = index == (int)achive;
+                uiNotice.transform.GetChild(index).gameObject.SetActive(isActive); // index와 알맞는 노티를 켜줌
+            }
+
+
+            StartCoroutine(NoticeRoutine()); // 노티 켜주는 코루틴 실행
+
+        }
+
+
+    }
+
+    IEnumerator NoticeRoutine()
+    {
+        uiNotice.SetActive(true);
+        
+        yield return wait;
+
+        uiNotice.SetActive(false);
+    }
+
+}

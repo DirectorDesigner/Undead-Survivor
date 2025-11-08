@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public float maxGameTime = 2 * 10f;
 
     [Header("# Player Info")]
+    public int playerId;
     public int level;
     public int kill;
     public int exp;
@@ -31,12 +32,15 @@ public class GameManager : MonoBehaviour
         instance = this; // 생명 주기에서 인스턴스 변수를 자기자신 this로 초기화
     }
 
-    public void GameStart()
+    public void GameStart(int id)
     {
-        health = maxHealth;  // 플레이어 체력 초기화
-        uiLevelUp.Select(0); // 임시 스크립트
-        Resume();
+        playerId = id;
+        health = maxHealth;                // 플레이어 체력 초기화
 
+        player.gameObject.SetActive(true); // 플레이어 오브젝트 활성화
+        uiLevelUp.Select(playerId % 2);    // 기본 무기 지급
+        Resume();
+        
     }
 
     public void GameOver()

@@ -10,6 +10,8 @@ public class Player : MonoBehaviour
 
     public Hand[] hands;        // Hand 스크립트 배열 선언
 
+    public RuntimeAnimatorController[] animCon; // 애니메이터 컨트롤러 저장할 배열 변수 선언 (여러 캐릭터 사용을 위해)
+
     Rigidbody2D rigid;          // 리지드 바디를 받는 변수 선언
     SpriteRenderer spriter;     // 스프라이트 받는 변수
     Animator anim;              // 애니메이션 받는 변수
@@ -22,6 +24,12 @@ public class Player : MonoBehaviour
         anim = GetComponent<Animator>();            // 초기화용
         scanner = GetComponent<Scanner>();          // 초기화용, 직접 만든 컴포넌트도 GetComponent로 가져올 수 있음
         hands = GetComponentsInChildren<Hand>(true);    // 초기화용, 자식 오브젝트에 있는 Hand 스크립트 모두 가져옴
+    }
+
+    private void OnEnable()
+    {
+        speed *= Character.Speed;
+        anim.runtimeAnimatorController = animCon[GameManager.instance.playerId]; // 플레이어 ID와 알맞는 애니메이션 출력, 인스펙터 내 OnClick에서 연결
     }
 
     void Start()

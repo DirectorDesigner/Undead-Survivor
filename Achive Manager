@@ -75,7 +75,7 @@ public class AchiveManager : MonoBehaviour
 
             case Achive.UnlockPotato:
                 if (GameManager.instance.isLive)                // 게임이 라이브일 때만 (게임 끝나고 적 다 죽일 때 발생 안하게끔)
-                    isAchive = GameManager.instance.kill >= 10; // UnlockPotato는 10킬 이상인 경우에 활성화 됨
+                    isAchive = GameManager.instance.kill >= 300; // UnlockPotato는 10킬 이상인 경우에 활성화 됨 > 밸런스 조절을 위해 300으로 수정
                     break;
 
             case Achive.UnlockBean:
@@ -106,7 +106,8 @@ public class AchiveManager : MonoBehaviour
     IEnumerator NoticeRoutine()
     {
         uiNotice.SetActive(true);
-        
+        AudioManager.instance.PlaySfx(AudioManager.Sfx.LevelUp);
+
         yield return wait;
 
         uiNotice.SetActive(false);

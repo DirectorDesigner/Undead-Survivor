@@ -38,13 +38,6 @@ public class Weapon : MonoBehaviour
                 break;
         }
 
-        // 테스트 코드
-        if (Input.GetButtonDown("Jump"))
-        {
-            LevelUp(20, 1);
-        }
-
-
     }
 
     public void LevelUp(float damage, int count)
@@ -126,7 +119,7 @@ public class Weapon : MonoBehaviour
             bullet.Rotate(rotVec);
             bullet.Translate(bullet.up * 1.5f, Space.World);              // 총알을 위로 1.5만큼 이동시킨다 (월드 좌표계 기준)
 
-            bullet.GetComponent<Bullet>().Init(damage, -1, Vector3.zero); // -1은 무한 관통 (주석 적어라 남들도 이해하게)
+            bullet.GetComponent<Bullet>().Init(damage, -100, Vector3.zero); // -100은 무한 관통 (주석 적어라 남들도 이해하게)
 
         }
     }
@@ -147,6 +140,8 @@ public class Weapon : MonoBehaviour
         bullet.position = transform.position;
         bullet.rotation = Quaternion.FromToRotation(Vector3.up, dir); // 지정된 축을 중심으로 목표를 향해 회전하는 함수
         bullet.GetComponent<Bullet>().Init(damage,count, dir);        // -1은 무한 관통 (주석 적어라 남들도 이해하게)
+
+        AudioManager.instance.PlaySfx(AudioManager.Sfx.Range);
 
     }
 

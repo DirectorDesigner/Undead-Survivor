@@ -16,12 +16,19 @@ public class LevelUp : MonoBehaviour
         Next();
         rect.localScale = Vector3.one;      // UI 크기 원래대로
         GameManager.instance.Stop();        // 게임 일시정지
+        AudioManager.instance.PlaySfx(AudioManager.Sfx.LevelUp);
+
+        AudioManager.instance.EffectBgm(true);
+
     }
 
     public void Hide()                      // 레벨업 UI 숨기기
     {
         rect.localScale = Vector3.zero;     // UI 크기 0으로
         GameManager.instance.Resume();      // 게임 재개
+        AudioManager.instance.PlaySfx(AudioManager.Sfx.Select);
+
+        AudioManager.instance.EffectBgm(false);
     }
 
     public void Select(int index)           // 대신 아이템 선택

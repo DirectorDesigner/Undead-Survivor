@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
@@ -19,10 +20,10 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
-        rigid = GetComponent<Rigidbody2D>();        // 초기화용
-        spriter = GetComponent<SpriteRenderer>();   // 초기화용
-        anim = GetComponent<Animator>();            // 초기화용
-        scanner = GetComponent<Scanner>();          // 초기화용, 직접 만든 컴포넌트도 GetComponent로 가져올 수 있음
+        rigid = GetComponent<Rigidbody2D>();            // 초기화용
+        spriter = GetComponent<SpriteRenderer>();       // 초기화용
+        anim = GetComponent<Animator>();                // 초기화용
+        scanner = GetComponent<Scanner>();              // 초기화용, 직접 만든 컴포넌트도 GetComponent로 가져올 수 있음
         hands = GetComponentsInChildren<Hand>(true);    // 초기화용, 자식 오브젝트에 있는 Hand 스크립트 모두 가져옴
     }
 
@@ -41,8 +42,8 @@ public class Player : MonoBehaviour
     {
         if (!GameManager.instance.isLive)
             return;
-        inputVec.x = Input.GetAxisRaw("Horizontal"); // GetAxis는 부드럽게 움직임 (스케이팅 현상)
-        inputVec.y = Input.GetAxisRaw("Vertical");   // Raw는 딱딱 떨어짐
+        // inputVec.x = Input.GetAxisRaw("Horizontal"); // GetAxis는 부드럽게 움직임 (스케이팅 현상)
+        // inputVec.y = Input.GetAxisRaw("Vertical");   // Raw는 딱딱 떨어짐
     }
 
 
@@ -59,11 +60,11 @@ public class Player : MonoBehaviour
         rigid.MovePosition(rigid.position + nextVec); // 위치 이동, 현재 위치도 더 해줘야 함
     }
 
-    //void OnMove(InputValue value) // Input System 패키지 사용시 사용, PlayerInput 컴포넌트 사용
+    void OnMove(InputValue value) // Input System 패키지 사용시 사용, PlayerInput 컴포넌트 사용
                                     //InputValue 매개변수 사용 
-    // {
-    //    inputVec = value.Get<Vector2>(); 
-    // }
+    {
+        inputVec = value.Get<Vector2>(); 
+    }
 
     private void LateUpdate()
     {
@@ -85,7 +86,7 @@ public class Player : MonoBehaviour
         if (!GameManager.instance.isLive)
             return;
 
-            GameManager.instance.health -= Time.deltaTime * 10;
+            GameManager.instance.health -= Time.deltaTime * 10; // 좀비 부딪히면 체력 감소
 
             if (GameManager.instance.health < 0)
             {

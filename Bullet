@@ -17,7 +17,7 @@ public class Bullet : MonoBehaviour
         this.damage = damage; // this = 해당 클래스의 변수로 접근
         this.per = per;       // 왼쪽은 클래스 변수, 오른쪽은 매개변수
 
-        if (per > -1)
+        if (per >= 0)
         {
             rigid.linearVelocity = dir * 15f; // 일정한 방향과 속도로 날아감
         }
@@ -25,16 +25,25 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)   // 관통 내용
     {
-        if (!collision.CompareTag("Enemy") || per == -1 ) // || = 또는
+        if (!collision.CompareTag("Enemy") || per == -100 ) // || = 또는
             return;                                       // 적이랑 부딪힌 게 아니면 밑에 코드 실행하지 마라
 
         per--;
 
-        if (per == -1)
+        if (per < 0)
         {
             rigid.linearVelocity = Vector2.zero; // 속도 0으로
             gameObject.SetActive(false);         // 총알 오브젝트 파괴
         }
+
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (!collision.CompareTag("Area") || per == -100) // || = 또는
+            return;
+
+        gameObject.SetActive(false);
 
     }
 
